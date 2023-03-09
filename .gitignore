@@ -1,0 +1,7 @@
+
+tests/gis
+tests/curvefit
+build
+dist
+longs_python_toolbox.egg-info
+lots/__pycache__
