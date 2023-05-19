@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2021/07/28
+* Updated on 2023/05/19
 * python3 + GEE + GCS
 **
 * Due to Google Cloud Storage need stand alone credential, so put those functions imported both ee and google.cloud in a stand alone file.
@@ -19,7 +19,7 @@ import magic
 from .gcs import *
 from .gee import *
 
-def upload2AssetViaGCS_core(filename, assetId, overwrite=True, wait=True):
+def upload2AssetViaGCS_core(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''Upload a geocsv, geotiff file to GEE asset via GCS (Google Cloud Storage).
 	
 	Parameters:
@@ -27,6 +27,9 @@ def upload2AssetViaGCS_core(filename, assetId, overwrite=True, wait=True):
 			Type: string, pathlib.PosixPath
 		assetId: 
 			Type: string
+		crs:
+			Type: string, eg. 'ESPG:4326'
+			Default: None
 		overwrite: 
 			Type: boolean
 			Default: True
@@ -49,6 +52,8 @@ def upload2AssetViaGCS_core(filename, assetId, overwrite=True, wait=True):
 		print('Failed -- type error -- current extension: %s, type: %s' % (filename.suffix, filetype))
 		return False
 	
+	if not crs: crs = 'ESPG:4326'	# default crs
+	
 	fileNameGCS = 'temp' + str(int(time.time()*1e6)) + filename.suffix	#temporaty
 		
 	try:
@@ -62,12 +67,12 @@ def upload2AssetViaGCS_core(filename, assetId, overwrite=True, wait=True):
 			#upload to gee assets
 			if not wait:
 				subprocess.call(['earthengine', 'upload', upload_object, '--force', 
-					'--asset_id=' + assetId, 'gs://longlovemyu.appspot.com/' + fileNameGCS])
+					'--asset_id=' + assetId, '--crs=' + crs, 'gs://longlovemyu.appspot.com/' + fileNameGCS])
 				print('Reminding -- upload task %s has been submitted -- keyword "wait" is False' %assetId )
 				return True
 			else:							
 				subprocess.call(['earthengine', 'upload', upload_object, '--wait', '--force', 
-					'--asset_id=' + assetId, 'gs://longlovemyu.appspot.com/' + fileNameGCS])
+					'--asset_id=' + assetId, '--crs=' + crs, 'gs://longlovemyu.appspot.com/' + fileNameGCS])
 			
 				#get current task object
 				tasks = ee.batch.Task.list()
@@ -90,7 +95,7 @@ def upload2AssetViaGCS_core(filename, assetId, overwrite=True, wait=True):
 		#remove temporary
 		if blob_exists(fileNameGCS): delete_blob(fileNameGCS)
 
-def upload2AssetViaGCS(filename, assetId, overwrite=True, wait=True):
+def upload2AssetViaGCS(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''A wrapper / preprocessing to upload an image or table to GEE asset via GCS (Google Cloud Storage).
 
 	Parameters:
@@ -98,6 +103,9 @@ def upload2AssetViaGCS(filename, assetId, overwrite=True, wait=True):
 			Type: string, pathlib.PosixPath
 		assetId: 
 			Type: string
+		crs:
+			Type: string, eg. 'ESPG:4326'
+			Default: None
 		overwrite: 
 			Type: boolean
 			Default: True
@@ -124,7 +132,7 @@ def upload2AssetViaGCS(filename, assetId, overwrite=True, wait=True):
 		return False
 		
 	try:
-		return upload2AssetViaGCS_core(filename2, assetId, overwrite=overwrite, wait=wait)
+		return upload2AssetViaGCS_core(filename2, assetId, crs=crs, overwrite=overwrite, wait=wait)
 	except:
 		print('-'*60); traceback.print_exc(); print('-'*60)
 		return False

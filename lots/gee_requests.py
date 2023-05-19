@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2020/06/23
+* Updated on 2023/05/19
 * python3 + GEE
 """
 
@@ -20,7 +20,7 @@ import magic
 
 from .gee import *
 
-def upload2AssetByRequests_core(filename, assetId, overwrite=True, wait=True):
+def upload2AssetByRequests_core(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''Upload a geocsv, geotiff file to GEE asset by an integrated requests and ingesting method based on cookies acquired by Selenium.
 	
 	Parameters:
@@ -28,6 +28,9 @@ def upload2AssetByRequests_core(filename, assetId, overwrite=True, wait=True):
 			Type: string, pathlib.PosixPath
 		assetId: 
 			Type: string
+		crs:
+			Type: string, eg. 'ESPG:4326'
+			Default: None
 		overwrite: 
 			Type: boolean
 			Default: True
@@ -49,17 +52,26 @@ def upload2AssetByRequests_core(filename, assetId, overwrite=True, wait=True):
 		print('Failed -- type error -- current extension: %s, type: %s' % (filename.suffix, filetype))
 		return False
 	
-	username = assetId.split('/')[1]
-	
+	if not crs: crs = 'ESPG:4326'
+		
 	#it will assign onece when globally; so put it locally
-	with open('gee_cookies.csv','r') as f:
-		cookies = json.loads(f.read())
+	# Created by using https://github.com/longavailable/practices/blob/main/python/selenium/002gee_cookies_selenium.py
+	try:
+		with open('gee_cookies.csv','r') as f:
+			cookies = json.loads(f.read())
+	except FileNotFoundError:
+		print('File "gee_cookies.csv" does not exist. Try to create it by using https://github.com/longavailable/practices/blob/main/python/selenium/002gee_cookies_selenium.py')
 	
-	assert username in cookies
 	s = requests.Session()
-	for cookie in cookies[username]:
-		s.cookies.set(cookie['name'], cookie['value'])
-
+	try:
+		username = assetId.split('/')[1]
+		assert username in cookies
+		for cookie in cookies[username]:
+			s.cookies.set(cookie['name'], cookie['value'])
+	except:
+		for cookie in cookies:
+			s.cookies.set(cookie['name'], cookie['value'])
+	
 	#STEP1 - request a temporary url for uploading file to GCS
 	url_geturl = 'https://code.earthengine.google.com/assets/upload/geturl'
 	re=s.get(url_geturl)
@@ -99,9 +111,10 @@ def upload2AssetByRequests_core(filename, assetId, overwrite=True, wait=True):
 		paras ={
 			'id':'projects/earthengine-legacy/assets/%s' % assetId,
 			'sources':[{
-				'charset':'UTF-8',
-				'maxErrorMeters':1,
-				'uris':uri
+				'charset': 'UTF-8',
+				'maxErrorMeters': 1,
+				'uris': uri,
+				'crs': crs
 			}]
 		}
 		resp=ee.data.startTableIngestion(ee.data.newTaskId()[0], paras, allow_overwrite=overwrite)
@@ -112,8 +125,9 @@ def upload2AssetByRequests_core(filename, assetId, overwrite=True, wait=True):
 			'bands':[],
 			'maskBands':[],
 			'tilesets':[{
-				"sources":[{
-					"uris":uri
+				'sources':[{
+					'uris': uri,
+					'crs': crs
 				}]
 			}]
 		}
@@ -146,7 +160,7 @@ def upload2AssetByRequests_core(filename, assetId, overwrite=True, wait=True):
 		print('Reminding -- upload task %s has been submitted -- keyword "wait" is False' %assetId )
 		return True
 
-def upload2AssetByRequests(filename, assetId, overwrite=True, wait=True):
+def upload2AssetByRequests(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''A wrapper / preprocessing to upload an image or table to GEE asset by an integrated requests and ingesting method based on cookies acquired by Selenium.
 
 	Parameters:
@@ -154,6 +168,9 @@ def upload2AssetByRequests(filename, assetId, overwrite=True, wait=True):
 			Type: string, pathlib.PosixPath
 		assetId: 
 			Type: string
+		crs:
+			Type: string, eg. 'ESPG:4326'
+			Default: None
 		overwrite: 
 			Type: boolean
 			Default: True
@@ -180,7 +197,7 @@ def upload2AssetByRequests(filename, assetId, overwrite=True, wait=True):
 		return False
 		
 	try:
-		return upload2AssetByRequests_core(filename2, assetId, overwrite=overwrite, wait=wait)
+		return upload2AssetByRequests_core(filename2, assetId, crs=crs, overwrite=overwrite, wait=wait)
 	except:
 		print('-'*60); traceback.print_exc(); print('-'*60)
 		return False

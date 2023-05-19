@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2022/08/06
+* Updated on 2023/05/19
 * python3 + GEE
 """
 
@@ -942,7 +942,7 @@ def transitionMatrix(eeImage0, eeImage1, geometry=None, scale=30, additional=Non
 		transition = transition + re
 	return transition
 
-def upload2Asset(filename, assetId, overwrite=True, wait=True):
+def upload2Asset(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''A wrapper to upload a geojson (.geojson, .json), geocsv (.csv), or geotiff (.tif, .tiff) file to GEE asset.
 	
 	Parameters:
@@ -950,6 +950,9 @@ def upload2Asset(filename, assetId, overwrite=True, wait=True):
 			Type: string, pathlib.PosixPath
 		assetId: 
 			Type: string
+		crs:
+			Type: string, eg. 'ESPG:4326'
+			Default: None
 		overwrite: 
 			Type: boolean
 			Default: True
@@ -964,23 +967,23 @@ def upload2Asset(filename, assetId, overwrite=True, wait=True):
 		#from longsgeegcs import upload2AssetViaGCS
 		from .geegcs import upload2AssetViaGCS
 		print('Status -- uploadMode=0 -- via Google Cloud Storage')
-		return upload2AssetViaGCS(filename, assetId, overwrite=overwrite, wait=wait)
+		return upload2AssetViaGCS(filename, assetId, crs=crs, overwrite=overwrite, wait=wait)
 	except:
 		#requests need help from selenium
 		#from longsgee_requests import upload2AssetByRequests
 		from .gee_requests import upload2AssetByRequests
 		print('Status -- uploadMode=1 -- by requests')
-		return upload2AssetByRequests(filename, assetId, overwrite=overwrite, wait=wait)
+		return upload2AssetByRequests(filename, assetId, crs=crs, overwrite=overwrite, wait=wait)
 
-def uploadTable2Asset(filename, assetId, overwrite=True, wait=True):
+def uploadTable2Asset(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''This function is for keeping compatible. See 'upload2Asset'.	
 	'''
-	return upload2Asset(filename, assetId, overwrite=overwrite, wait=wait)
+	return upload2Asset(filename, assetId, crs=crs, overwrite=overwrite, wait=wait)
 
-def uploadImage2Asset(filename, assetId, overwrite=True, wait=True):
+def uploadImage2Asset(filename, assetId, crs=None, overwrite=True, wait=True):
 	'''This function is for keeping compatible. See 'upload2Asset'.	
 	'''
-	return upload2Asset(filename, assetId, overwrite=overwrite, wait=wait)
+	return upload2Asset(filename, assetId, crs=crs, overwrite=overwrite, wait=wait)
 
 def reclassESACCILC(year, geometry):
 	'''Reclass ESA-CCI-LC to custum LULC.
