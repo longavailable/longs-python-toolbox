@@ -16,6 +16,8 @@ import pathlib, shutil, traceback, zipfile
 from datetime import datetime, date, timedelta
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
+import requests
+import socket
 
 import matplotlib as mpl
 import pandas as pd
@@ -436,37 +438,52 @@ def integerize(listInput, check=True):
 		print('-'*60); traceback.print_exc(); print('-'*60)
 		return False
 
-def proxy(ip='', port='10809'):
-	'''A proxy setting fuction.
-	
-	Parameters:
-		ip: 
-			Type: string
-		port: 
-			Type: strong, integer
-			Default: '10809'
-	Returns:
-		None
-	'''
-	if ip:
-		os.environ['HTTP_PROXY'] = 'http://%s:%s' % (ip, port)
-		os.environ['HTTPS_PROXY'] = 'http://%s:%s' % (ip, port)
-	else:
-		if platform.system()=='Windows':
-			import socket
-			hostip = socket.gethostbyname(socket.gethostname())
-			os.environ['HTTP_PROXY'] = 'http://%s:%s' % (hostip, port)
-			os.environ['HTTPS_PROXY'] = 'http://%s:%s' % (hostip, port)
-		if platform.system()=='Linux': # wsl2
-			import subprocess
-			winip = ( subprocess.run(['grep', 'nameserver', '/etc/resolv.conf'], capture_output=True)	# get nameserver
-				.stdout					# get output
-				.decode('utf-8')		# convert byte-like object to string
-				.rstrip()				# remove '\n'
-				.split(' ')[-1]	)		# get the ip
-			os.environ['HTTP_PROXY'] = 'http://%s:%s' % (winip, port)
-			os.environ['HTTPS_PROXY'] = 'http://%s:%s' % (winip, port)
-		
+def proxy(ip='', port_list=['10808', '10809', '1080']):
+    '''A proxy setting fuction.
+
+    Parameters:
+        ip: 
+            Type: string
+        port_list: 
+            Type: list of strong or integer
+            Default: ['10808', '10809', '1080']
+    Returns:
+        None
+    '''
+
+    def is_proxy_valid(proxy_url):
+        """Check if the proxy is valid by making a request to a test URL."""
+        try:
+            response = requests.get('http://www.google.com', proxies={'http': proxy_url, 'https': proxy_url}, timeout=5)
+            return response.status_code == 200
+        except requests.RequestException:
+            return False
+
+    for port in port_list:
+        if ip:
+            proxy_url = f'http://{ip}:{port}'
+        else:
+            if platform.system()=='Windows':
+                hostip = socket.gethostbyname(socket.gethostname())
+                proxy_url = f'http://{hostip}:{port}'
+            elif platform.system()=='Linux': # wsl2
+                winip = ( subprocess.run(['grep', 'nameserver', '/etc/resolv.conf'], capture_output=True)	# get nameserver
+                    .stdout					# get output
+                    .decode('utf-8')		# convert byte-like object to string
+                    .rstrip()				# remove '\n'
+                    .split(' ')[-1]	)		# get the ip
+                proxy_url = f'http://{winip}:{port}'
+            else:
+                continue
+        
+        if is_proxy_valid(proxy_url):
+            os.environ['HTTP_PROXY'] = proxy_url
+            os.environ['HTTPS_PROXY'] = proxy_url
+            print(f"Proxy set to {proxy_url}")
+            return
+            
+    print("No valid proxy found in the provided port list.")
+    
 def addDays(startDate, n, skip_leap_days=False):
 	'''A function to operate addition for a date.
 	
