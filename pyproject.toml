@@ -1,0 +1,39 @@
+# pyproject.toml
+[build-system]
+requires = ['setuptools >= 42.0.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'longs-python-toolbox'
+version = '0.1.dev'
+authors = [
+	{name = 'Xiaolong "Bruce" Liu', email = 'liuxiaolong125@gmail.com'},
+]
+description = 'A python tool colletion for personal use.'
+readme = 'README.md'
+license = 'MIT'
+license-files = ['LICENSE']
+classifiers=[
+    'Development Status :: 3 - Alpha',
+	'Programming Language :: Python :: 3',
+	]
+requires-python='>=3.6'
+dependencies =[
+	'adaptive-curvefitting',
+	'copyheaders',
+	'earthengine-api',
+	'geopandas',
+	'shapely',
+	'google-cloud-storage',
+	'matplotlib',
+	'numpy',
+	'pandas',
+	'PyGithub',
+	'python-magic',
+	'requests-toolbelt',
+	'scipy',
+	'voronoi-diagram-for-polygons',
+]
+
+[project.urls]
+Repository = 'https://github.com/longavailable/python-toolbox'
