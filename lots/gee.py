@@ -6,10 +6,10 @@
 
 from .util import *
 try:
-	import ee; ee.Initialize()
+	import ee; ee.Initialize(project='ee-longavailable')
 except:
 	proxy()		# set a proxy for 'earthengineapi'
-	import ee; ee.Initialize()
+	import ee; ee.Initialize(project='ee-longavailable')
 import numpy as np
 import math
 import json, csv
