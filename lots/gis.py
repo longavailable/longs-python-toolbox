@@ -21,7 +21,7 @@ import pathlib, subprocess, time, traceback, os, sys
 
 from .util import fileIsValid
 
-from longsgis.longsgis import voronoiDiagram4plg, dropHolesBase, dropHoles
+from longsgis.longsgis import *
 
 def assignNodataValue(rasterFile, noDataValue):
 	'''Assign a specified nodata value by invoking `gdal_edit`.
