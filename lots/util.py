@@ -531,7 +531,8 @@ def daterange(startDate, endDate, skip_leap_days=False):
     return dates
     '''
     if startDate > endDate:
-        returen f'"startDate" {startDate} is greater than "endDate" {endDate}, please check again.'
+        return f'"startDate" {startDate} is greater than "endDate" {endDate}, please check again.'
+        
     # parallel
     pool = ThreadPool(4)
     dates = pool.starmap(addDays, zip(repeat(startDate), list(range(int((endDate - startDate).days))), repeat(skip_leap_days)))
