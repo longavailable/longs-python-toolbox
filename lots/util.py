@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2023/03/06
+* Updated on 2025/08/16
 * python3
 * Usefull tips:
 * Add this following line to a script which want to invoke these exporting functions: 
@@ -21,6 +21,7 @@ import socket
 
 import matplotlib as mpl
 import pandas as pd
+import numpy as np
 
 def fileIsValid(filename):
     '''Check if a file exist and non-empty
