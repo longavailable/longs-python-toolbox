@@ -554,3 +554,33 @@ def is_number(string):
         return True
     except ValueError:
         return False
+
+def round_sigfig(x, sig=2, mode='round'):
+    """
+    四舍五入到指定的有效位数（significant figures）。
+    
+    参数:
+    x (float): 输入数字。
+    sig (int): 保留的有效位数，默认为2。
+    mode (str): 模式，'round'（四舍五入），'ceil'（向上取），'floor'（向下取），默认为'round'。
+    
+    返回:
+    float: 处理后的数字。
+    """
+    if x == 0:
+        return 0
+    
+    exponent = np.floor(np.log10(np.abs(x)))
+    shift = sig - int(exponent) - 1
+    
+    if mode == 'round':
+        return np.around(x, shift)
+    elif mode == 'ceil':
+        return np.ceil(x * 10**shift) / 10**shift
+    elif mode == 'floor':
+        return np.floor(x * 10**shift) / 10**shift
+    else:
+        raise ValueError("Invalid mode. Choose 'round', 'ceil', or 'floor'.")
+
+# alias/别名
+round_sf = round_sigfig
