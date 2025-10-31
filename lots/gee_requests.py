@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2023/05/19
+* Updated on 2025/10/31
 * python3 + GEE
 """
 
 from .util import *
 try:
-	import ee; ee.Initialize()
+	import ee; ee.Initialize(project='ee-longavailable')
 except:
 	proxy()		# set a proxy for 'earthengineapi'
-	import ee; ee.Initialize()
+	import ee; ee.Initialize(project='ee-longavailable')
 
 import json, pathlib, time, traceback
 
