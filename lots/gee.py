@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2023/05/19
+* Updated on 2025/11/09
 * python3 + GEE
 """
 
@@ -765,74 +765,75 @@ def batchDeleteAssets(location, startswith_str='', contains_str='', endswith_str
 	return True
 	
 	
-def exportImage2Asset(eeImage, assetId, scale=1000, region=None, overwrite=True, wait=True):
-	'''A wrapper to execute a ee.batch.Export.image.toAsset() task.
-	
-	Parameters:
-		eeImage: ee.Image to export
-			Type: ee.Image object
-		assetId: 
-			Type: string
-		scale: resolution in meters per pixel
-			Type: integer
-			default: 1000
-		region:
-			Type: ee.Geometry or coordinates serialized as a string
-			default: None
-		overwrite: 
-			Type: boolean
-			Default: True
-		wait:
-			Type: boolean
-			Default: True
-	Returns:
-		Boolean
-	'''
-	randomStr = 'temp%s' % str(int(time.time()*1e6))
-	if ee.data.getInfo(assetId):
-		if overwrite:
-			assetId_export = '%s_%s' % (assetId,randomStr)
-			#if ee.data.getInfo(assetId_export): ee.data.deleteAsset(assetId_export)
-			eeDataDeleteAsset(assetId_export, wait=True)
-			wait = True
-		else:
-			print('Reminding -- %s exist -- keyword "overwrite" is False' %assetId )
-			return True
-	else:
-		assetId_export = assetId
-	
-	region = region if region else eeImage.geometry()
-	
-	task = ( ee.batch.Export.image.toAsset(
-		image= eeImage,
-		description= 'export_%s' % assetId.split('/')[-1],
-		assetId= assetId_export,
-		scale= scale,
-		region= region) )
-	task.start()
-	if wait:
-		while task.active():
-			time.sleep(30)
-		if task.status()['state'] == 'COMPLETED':
-			#ensure the asset exists
-			while not ee.data.getInfo(assetId_export):
-				time.sleep(5)
-			#remove existed and rename the new completed asset
-			if assetId_export.endswith(randomStr):
-				#ee.data.deleteAsset(assetId)
-				eeDataDeleteAsset(assetId, wait=True)
-				ee.data.renameAsset(assetId_export, assetId)
-				#ensure renameAsset successful
-				while not ee.data.getInfo(assetId):
-					time.sleep(5)
-			print('Succeeded -- export task %s' %assetId )
-			return True
-		else:
-			print('Failed -- export task %s' %assetId )
-			return False
-	else:
-		print('Reminding -- export task %s has been submitted -- keyword "wait" is False' %assetId )
-		return True
+def exportImage2Asset(eeImage, assetId, scale=1000, crs='EPSG:4326', region=None, overwrite=True, wait=True):
+    '''A wrapper to execute a ee.batch.Export.image.toAsset() task.
+
+    Parameters:
+        eeImage: ee.Image to export
+            Type: ee.Image object
+        assetId: 
+            Type: string
+        scale: resolution in meters per pixel
+            Type: integer
+            default: 1000
+        region:
+            Type: ee.Geometry or coordinates serialized as a string
+            default: None
+        overwrite: 
+            Type: boolean
+            Default: True
+        wait:
+            Type: boolean
+            Default: True
+    Returns:
+        Boolean
+    '''
+    randomStr = 'temp%s' % str(int(time.time()*1e6))
+    if ee.data.getInfo(assetId):
+        if overwrite:
+            assetId_export = '%s_%s' % (assetId,randomStr)
+            #if ee.data.getInfo(assetId_export): ee.data.deleteAsset(assetId_export)
+            eeDataDeleteAsset(assetId_export, wait=True)
+            wait = True
+        else:
+            print('Reminding -- %s exist -- keyword "overwrite" is False' %assetId )
+            return True
+    else:
+        assetId_export = assetId
+
+    region = region if region else eeImage.geometry()
+
+    task = ( ee.batch.Export.image.toAsset(
+        image= eeImage,
+        description= 'export_%s' % assetId.split('/')[-1],
+        assetId= assetId_export,
+        scale= scale,
+        crs=crs,
+        region= region) )
+    task.start()
+    if wait:
+        while task.active():
+            time.sleep(30)
+        if task.status()['state'] == 'COMPLETED':
+            #ensure the asset exists
+            while not ee.data.getInfo(assetId_export):
+                time.sleep(5)
+            #remove existed and rename the new completed asset
+            if assetId_export.endswith(randomStr):
+                #ee.data.deleteAsset(assetId)
+                eeDataDeleteAsset(assetId, wait=True)
+                ee.data.renameAsset(assetId_export, assetId)
+                #ensure renameAsset successful
+                while not ee.data.getInfo(assetId):
+                    time.sleep(5)
+            print('Succeeded -- export task %s' %assetId )
+            return True
+        else:
+            print('Failed -- export task %s' %assetId )
+            return False
+    else:
+        print('Reminding -- export task %s has been submitted -- keyword "wait" is False' %assetId )
+        return True
 
 def binarize(eeImage, pixelValue, binary=True):
 	'''Binarizing / extracting a specifid pixel value (land use type etc) in a source image.
