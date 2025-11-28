@@ -310,14 +310,18 @@ RESAMPLING_MAP = {
     "nearest": Resampling.nearest,
     "bilinear": Resampling.bilinear,
     "cubic": Resampling.cubic,
+    "cubic_spline": Resampling.cubic_spline,
     "lanczos": Resampling.lanczos,
     "average": Resampling.average,
     "mode": Resampling.mode,
+    "gauss": Resampling.gauss,
     "max": Resampling.max,
     "min": Resampling.min,
     "med": Resampling.med,
     "q1": Resampling.q1,
     "q3": Resampling.q3,
+    "sum": Resampling.sum,
+    "rms": Resampling.rms,
 }
 
 def get_resampling(method: str) -> Resampling:
