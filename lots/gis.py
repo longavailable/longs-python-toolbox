@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-* Updated on 2022/12/13
+* Updated on 2025/11/18
 * python3
 **
 * Geoprocessing in Python
@@ -16,6 +16,7 @@ from osgeo import gdal, gdal_array
 from collections import Counter
 import pyproj
 import rioxarray as rxr
+from rasterio.enums import Resampling
 
 import pathlib, subprocess, time, traceback, os, sys
 
@@ -304,4 +305,25 @@ def segmentedVolume(rasterFile, start = None, stop = None, step = None):
 		newData.append(line)
 	return newData
 
+# Define a mapping dictionary
+RESAMPLING_MAP = {
+    "nearest": Resampling.nearest,
+    "bilinear": Resampling.bilinear,
+    "cubic": Resampling.cubic,
+    "lanczos": Resampling.lanczos,
+    "average": Resampling.average,
+    "mode": Resampling.mode,
+    "max": Resampling.max,
+    "min": Resampling.min,
+    "med": Resampling.med,
+    "q1": Resampling.q1,
+    "q3": Resampling.q3,
+}
+
+def get_resampling(method: str) -> Resampling:
+    """Convert string to Resampling enum (case-insensitive)."""
+    try:
+        return RESAMPLING_MAP[method.lower()]
+    except KeyError:
+        raise ValueError(f"Unknown resampling method: {method}")
 
